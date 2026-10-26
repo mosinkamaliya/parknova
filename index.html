@@ -1,0 +1,503 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ParkNova Smart Parking</title><style>
+:root{--bg:#0b1020;--card:#11182b;--card2:#182238;--text:#f3f6ff;--muted:#9eabc2;--line:#26324a;--accent:#635bff;--cyan:#13c8a3;--danger:#ff667a}*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#0b1020,#11172a);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}.shell{display:grid;grid-template-columns:245px 1fr;min-height:100vh}.side{padding:24px 18px;border-right:1px solid var(--line);background:#0e1527}.brand{font-weight:900;font-size:21px;display:flex;gap:10px;align-items:center;margin:4px 10px 32px}.logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#6d63ff,#18cbaa);font-weight:900}.nav{display:grid;gap:7px}.nav button,.btn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:11px 14px;border-radius:11px;cursor:pointer}.nav button{text-align:left;border:0;background:transparent;color:var(--muted)}.nav button:hover,.nav button.active{background:var(--card2);color:white}.main{padding:28px;max-width:1450px;width:100%;margin:auto}.top{display:flex;justify-content:space-between;margin-bottom:24px}.ey{color:#9da0ff;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.12em}.title{font-size:30px;font-weight:900;margin:5px 0}.sub{color:var(--muted);font-size:14px}.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:20px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:20px}.hero{min-height:240px;background:linear-gradient(120deg,#191d3a,#292d62)}h2{font-size:30px;margin:10px 0}.search{display:flex;gap:8px;margin-top:24px}.search input,.field input,.field select{flex:1;padding:13px;border-radius:11px;border:1px solid #ffffff22;background:#ffffff12;color:white;min-height:46px;outline:none}.field select{appearance:auto;color-scheme:dark}.field input[type="date"]{color-scheme:dark}.field select option{background:#11182b;color:#f3f6ff}.primary{background:var(--accent);border-color:var(--accent);font-weight:800}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}.stat{background:var(--card);border:1px solid var(--line);padding:16px;border-radius:15px}.num{font-size:25px;font-weight:900}.label{font-size:12px;color:var(--muted)}.lots{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.lot{border:1px solid var(--line);border-radius:15px;padding:14px}.lotrow{display:flex;justify-content:space-between;gap:8px}.tag{font-size:11px;padding:5px 8px;border-radius:99px;font-weight:800}.free{background:#13c8a31c;color:var(--cyan)}.busy{background:#ff667a1c;color:var(--danger)}.slots{display:flex;gap:5px;flex-wrap:wrap;margin:13px 0}.slot{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);display:grid;place-items:center;font-size:10px}.slot.free{background:#13c8a314}.slot.busy{background:#ff667a18}.map{height:330px;border-radius:15px;overflow:hidden;background:#dce8d9}.mapcanvas{width:100%;height:100%}.mapactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.modal{position:fixed;inset:0;background:#050914dd;backdrop-filter:blur(10px);display:grid;place-items:center;z-index:20}.box{width:min(430px,calc(100% - 30px));background:var(--card);border:1px solid var(--line);border-radius:22px;padding:28px}.field{display:grid;gap:6px;margin:14px 0}.field label{font-size:11px;color:var(--muted);font-weight:800}.toast{position:fixed;right:22px;bottom:22px;background:#192238;padding:13px 16px;border-radius:12px;display:none;z-index:30}.adminGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}@media(max-width:900px){.shell{grid-template-columns:1fr}.side{display:none}.grid{grid-template-columns:1fr}}@media(max-width:600px){.main{padding:16px}.lots,.stats,.adminGrid{grid-template-columns:1fr}.search{flex-direction:column}}
+
+/* ===== ParkNova Pro Motion System ===== */
+:root{--ease:cubic-bezier(.22,1,.36,1);--ease-soft:cubic-bezier(.16,1,.3,1)}
+html{scroll-behavior:smooth}
+body{overflow-x:hidden;background:radial-gradient(circle at 10% 0%,#1a2450 0,transparent 35%),radial-gradient(circle at 100% 100%,#123f49 0,transparent 32%),linear-gradient(135deg,#080d1a,#10182d 55%,#0b1325)}
+body:before{content:"";position:fixed;inset:-30%;pointer-events:none;z-index:-1;background:conic-gradient(from 180deg at 50% 50%,#635bff10,#13c8a308,#635bff10);animation:ambientSpin 22s linear infinite}
+.shell{animation:pageIn .7s var(--ease) both}
+.side{position:relative;backdrop-filter:blur(18px);background:#0d1425d9;box-shadow:18px 0 60px #0002}
+.brand{animation:brandIn .65s var(--ease) both}.logo{animation:logoFloat 3.2s ease-in-out infinite;transition:transform .3s var(--ease),box-shadow .3s}.logo:hover{transform:rotate(-7deg) scale(1.08);box-shadow:0 15px 35px #635bff66}
+.nav button{position:relative;overflow:hidden;transition:transform .25s var(--ease),background .25s,color .25s}.nav button:hover{transform:translateX(4px)}.nav button.active{box-shadow:inset 3px 0 var(--accent),0 8px 24px #0002}
+.main{animation:contentIn .8s var(--ease) both}.top{animation:dropIn .7s .05s var(--ease) both}
+.card,.stat,.lot{transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .35s}.card{animation:cardIn .65s var(--ease) both;box-shadow:0 18px 55px #0002}.card:hover{box-shadow:0 24px 70px #0004;border-color:#6672a355}.stat:hover,.lot:hover{transform:translateY(-5px);box-shadow:0 18px 45px #0003;border-color:#635bff55}
+.hero{position:relative;overflow:hidden;background:linear-gradient(125deg,#171d3c,#292f68 58%,#173e4b)}.hero:before{content:"";position:absolute;width:320px;height:320px;right:-110px;top:-150px;border-radius:50%;background:#635bff40;filter:blur(4px);animation:orb 7s ease-in-out infinite}.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 25%,#ffffff08 45%,transparent 65%);transform:translateX(-120%);animation:shine 5.5s 1.2s infinite}.hero>*{position:relative;z-index:1}
+.search input,.field input,.field select{transition:border-color .25s,box-shadow .25s,transform .25s}.search input:focus,.field input:focus,.field select:focus{outline:none;border-color:#817bff;box-shadow:0 0 0 4px #635bff1c,0 10px 30px #0002;transform:translateY(-1px)}
+.btn{position:relative;overflow:hidden;transition:transform .2s var(--ease),box-shadow .25s,border-color .25s,background .25s}.btn:hover{transform:translateY(-2px);box-shadow:0 10px 25px #0003;border-color:#6975a055}.btn:active{transform:translateY(0) scale(.97)}.primary{box-shadow:0 10px 26px #635bff35}.primary:hover{box-shadow:0 15px 34px #635bff55}
+.btn:after{content:"";position:absolute;inset:auto auto 50% 50%;width:0;height:0;border-radius:50%;background:#fff5;transform:translate(-50%,50%);transition:width .45s,height .45s}.btn:active:after{width:220px;height:220px}
+.lots .lot:nth-child(1),.stats .stat:nth-child(1){animation-delay:.08s}.lots .lot:nth-child(2),.stats .stat:nth-child(2){animation-delay:.14s}.lots .lot:nth-child(3),.stats .stat:nth-child(3){animation-delay:.2s}.lots .lot:nth-child(4){animation-delay:.26s}
+.lot{animation:riseIn .55s var(--ease) both}.slot{transition:transform .2s,box-shadow .2s}.slot:hover{transform:translateY(-3px) scale(1.08);box-shadow:0 7px 18px #0003}
+.map{box-shadow:inset 0 0 0 1px #ffffff22,0 16px 45px #0002;animation:mapIn .8s var(--ease) both}.map button{transition:transform .25s var(--ease),box-shadow .25s}.map button:hover{transform:scale(1.14);box-shadow:0 10px 25px #0004}
+.modal{animation:modalBg .28s ease both}.modal .box{animation:modalPop .5s var(--ease) both;box-shadow:0 35px 110px #0008}.modal .box>*{animation:fadeUp .45s var(--ease) both}.modal .box>*:nth-child(2){animation-delay:.04s}.modal .box>*:nth-child(3){animation-delay:.08s}.modal .box>*:nth-child(4){animation-delay:.12s}.modal .box>*:nth-child(5){animation-delay:.16s}
+.toast{backdrop-filter:blur(14px);border:1px solid #ffffff16;box-shadow:0 18px 50px #0006;animation:toastIn .45s var(--ease) both}.toast.show{display:block}
+@keyframes pageIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}@keyframes contentIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes dropIn{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}@keyframes brandIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}@keyframes riseIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes modalBg{from{opacity:0}to{opacity:1}}@keyframes modalPop{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes toastIn{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes orb{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-25px,25px) scale(1.08)}}@keyframes shine{0%,25%{transform:translateX(-120%)}55%,100%{transform:translateX(120%)}}@keyframes ambientSpin{to{transform:rotate(360deg)}}@keyframes mapIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+/* ===== iOS-inspired Liquid Glass UI ===== */
+:root{color-scheme:dark;--glass-bg:rgba(16,42,49,.48);--glass-bg-strong:rgba(20,52,60,.66);--glass-line:rgba(255,255,255,.18);--glass-line-soft:rgba(255,255,255,.09);--glass-highlight:rgba(255,255,255,.22);--glass-shadow:0 30px 90px rgba(0,0,0,.38);--glass-cyan:#6fffe9;--glass-blue:#79a8ff;--glass-ease:cubic-bezier(.16,1,.3,1)}
+html{background:#06161b}body{position:relative;min-height:100vh;background:radial-gradient(circle at 12% 8%,rgba(50,220,190,.22),transparent 28%),radial-gradient(circle at 88% 12%,rgba(75,130,255,.18),transparent 30%),radial-gradient(circle at 52% 100%,rgba(0,210,180,.13),transparent 34%),linear-gradient(135deg,#041015 0%,#08242a 46%,#06161e 100%);color:#f5fbff}
+body:before{content:"";position:fixed;inset:-18%;pointer-events:none;z-index:-2;background:radial-gradient(circle at 18% 35%,rgba(40,255,210,.16),transparent 17%),radial-gradient(circle at 78% 28%,rgba(82,125,255,.16),transparent 18%),radial-gradient(circle at 55% 78%,rgba(0,255,220,.1),transparent 20%);filter:blur(42px);animation:glassDrift 16s ease-in-out infinite alternate}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.025) 45%,transparent 55%);background-size:220% 100%;animation:glassSweep 9s ease-in-out infinite}
+.shell{gap:18px;padding:14px;animation:glassPageIn .75s var(--glass-ease) both}
+.side{margin:0;border:1px solid var(--glass-line);border-radius:30px;background:linear-gradient(145deg,rgba(28,68,76,.62),rgba(6,27,33,.5));backdrop-filter:blur(30px) saturate(165%);-webkit-backdrop-filter:blur(30px) saturate(165%);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.18),24px 30px 80px rgba(0,0,0,.28);position:relative;overflow:hidden}
+.side:before,.card:before,.stat:before,.lot:before,.box:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 28%,transparent 68%,rgba(255,255,255,.045));opacity:.7}
+.side:after,.card:after,.box:after{content:"";position:absolute;width:180px;height:180px;left:var(--gx,20%);top:var(--gy,0%);transform:translate(-50%,-50%);pointer-events:none;border-radius:50%;background:radial-gradient(circle,rgba(120,255,235,.11),transparent 68%);filter:blur(16px);opacity:0;transition:opacity .35s ease}
+.side:hover:after,.card:hover:after,.box:hover:after{opacity:1}
+.brand{position:relative;z-index:2}.logo{background:linear-gradient(145deg,rgba(255,255,255,.32),rgba(30,220,195,.2) 45%,rgba(70,120,255,.32));border:1px solid rgba(255,255,255,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 12px 35px rgba(0,230,200,.18);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.nav{position:relative;z-index:2}.nav button{border:1px solid transparent!important;background:transparent!important;border-radius:17px;padding:13px 14px;color:rgba(225,244,247,.66);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .35s var(--glass-ease),background .35s,border-color .35s,color .35s,box-shadow .35s}
+.nav button:hover{background:rgba(255,255,255,.07)!important;border-color:rgba(255,255,255,.08)!important;color:#fff;transform:translateX(5px)}.nav button.active{background:linear-gradient(135deg,rgba(255,255,255,.17),rgba(95,255,226,.08))!important;border-color:rgba(255,255,255,.14)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 12px 30px rgba(0,0,0,.2)}
+.main{position:relative;z-index:1}.top{padding:4px 4px}.card,.stat,.lot{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(25,60,68,.58),rgba(9,29,36,.47));border:1px solid var(--glass-line);backdrop-filter:blur(26px) saturate(155%);-webkit-backdrop-filter:blur(26px) saturate(155%);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 22px 70px rgba(0,0,0,.25)}
+.card:hover,.stat:hover,.lot:hover{border-color:rgba(145,255,239,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 30px 85px rgba(0,0,0,.33);transform:translateY(-4px)}
+.hero{background:linear-gradient(135deg,rgba(29,100,104,.62),rgba(22,53,74,.52) 55%,rgba(44,69,120,.48));border-color:rgba(255,255,255,.17)}
+.search input,.field input,.field select{background:rgba(255,255,255,.075)!important;border:1px solid rgba(255,255,255,.15)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.search input:focus,.field input:focus,.field select:focus{border-color:rgba(113,255,230,.55)!important;box-shadow:0 0 0 4px rgba(85,255,226,.09),inset 0 1px 0 rgba(255,255,255,.16),0 14px 35px rgba(0,0,0,.2)}
+.btn{background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.045));border-color:rgba(255,255,255,.15);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 8px 24px rgba(0,0,0,.16)}
+.btn:hover{background:linear-gradient(145deg,rgba(255,255,255,.19),rgba(100,255,232,.08));border-color:rgba(255,255,255,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 14px 35px rgba(0,0,0,.25)}
+.btn.primary{background:linear-gradient(135deg,rgba(83,255,223,.72),rgba(79,130,255,.78));border-color:rgba(255,255,255,.28);color:#031518;box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 12px 32px rgba(45,230,210,.18)}
+.btn.primary:hover{background:linear-gradient(135deg,rgba(111,255,231,.82),rgba(100,150,255,.86));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 18px 42px rgba(45,230,210,.24)}
+.tag.free{background:rgba(82,255,220,.12);border:1px solid rgba(82,255,220,.18)}
+.map{border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 20px 55px rgba(0,0,0,.25)}
+.bookingbox{position:relative;overflow:hidden;background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.11)!important;border-radius:17px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+.modal{z-index:100;background:rgba(2,13,18,.42)!important;backdrop-filter:blur(24px) saturate(145%);-webkit-backdrop-filter:blur(24px) saturate(145%);animation:liquidBackdropIn .42s ease both}
+.modal:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 25%,rgba(94,255,229,.09),transparent 38%),rgba(0,0,0,.16);pointer-events:none}
+.modal .box{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(34,75,82,.72),rgba(7,31,39,.68))!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:30px!important;backdrop-filter:blur(38px) saturate(180%) contrast(105%);-webkit-backdrop-filter:blur(38px) saturate(180%) contrast(105%);box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(0,0,0,.18),0 40px 120px rgba(0,0,0,.52),0 0 80px rgba(53,255,224,.08);animation:liquidModalIn .62s var(--glass-ease) both;transform-origin:center}
+.modal .box:before{background:linear-gradient(120deg,rgba(255,255,255,.18),transparent 24%,transparent 70%,rgba(80,255,226,.08));opacity:1}.modal .box:after{opacity:1;left:75%;top:10%;width:300px;height:300px;background:radial-gradient(circle,rgba(83,255,224,.11),transparent 67%);filter:blur(20px)}
+.modal .box>*{position:relative;z-index:2}.modal .box h2,.modal .box h1{letter-spacing:-.025em}.modal .box .btn{min-height:44px;border-radius:15px}
+.modal.closing{animation:liquidBackdropOut .3s ease forwards}.modal.closing .box{animation:liquidModalOut .32s var(--glass-ease) forwards}
+.toast{background:linear-gradient(145deg,rgba(32,71,78,.8),rgba(8,31,38,.78))!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:18px!important;backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 22px 60px rgba(0,0,0,.42)!important}
+.glass-ripple{position:absolute!important;z-index:1!important;pointer-events:none!important;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.55),rgba(90,255,229,.22) 35%,transparent 70%);transform:translate(-50%,-50%) scale(0);animation:glassRipple .65s ease-out forwards}
+.glass-shine{position:absolute;inset:-60%;pointer-events:none;border-radius:50%;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.14) 49%,transparent 56%);transform:translateX(-55%) rotate(12deg);animation:glassShine .85s var(--glass-ease) forwards}
+@keyframes liquidBackdropIn{from{opacity:0}to{opacity:1}}@keyframes liquidBackdropOut{to{opacity:0}}@keyframes liquidModalIn{0%{opacity:0;transform:translateY(28px) scale(.88);filter:blur(10px)}55%{opacity:1;transform:translateY(-5px) scale(1.015);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}@keyframes liquidModalOut{to{opacity:0;transform:translateY(18px) scale(.94);filter:blur(7px)}}@keyframes glassRipple{0%{opacity:.8;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(18)}}@keyframes glassShine{to{transform:translateX(55%) rotate(12deg)}}@keyframes glassDrift{0%{transform:translate3d(-2%,0,0) scale(1)}50%{transform:translate3d(3%,2%,0) scale(1.05)}100%{transform:translate3d(-1%,-2%,0) scale(1.02)}}@keyframes glassSweep{0%,20%{background-position:180% 0}60%,100%{background-position:-20% 0}}@keyframes glassPageIn{from{opacity:0;transform:scale(.985);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+@media(max-width:900px){.shell{padding:8px}.side{border-radius:24px}.card,.stat,.lot{border-radius:23px}.modal .box{border-radius:27px!important}}@media(max-width:600px){.modal{align-items:end}.modal .box{width:calc(100% - 16px)!important;max-height:88vh;overflow:auto;border-radius:30px 30px 22px 22px!important;animation:liquidSheetIn .62s var(--glass-ease) both}.modal.closing .box{animation:liquidSheetOut .32s var(--glass-ease) forwards}.side{border-radius:22px}}
+@keyframes liquidSheetIn{0%{opacity:0;transform:translateY(80px) scale(.97);filter:blur(8px)}55%{opacity:1;transform:translateY(-7px) scale(1.01);filter:none}100%{opacity:1;transform:none}}@keyframes liquidSheetOut{to{opacity:0;transform:translateY(70px) scale(.97);filter:blur(6px)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+.time-picker{display:flex;align-items:center;gap:7px}.time-picker select{flex:1;min-width:0;background:#142b34!important;color:#fff!important;color-scheme:dark;min-height:48px;padding:13px 10px!important;border:1px solid rgba(255,255,255,.35)!important;border-radius:11px!important;font:inherit}.time-picker span{font-size:20px;font-weight:700}.time-picker select:last-child{flex:0 0 82px}
+.field input[type="date"],.field input[type="time"]{display:block;width:100%;min-width:0;background:#142b34!important;color:#fff!important;color-scheme:dark;min-height:48px;opacity:1;-webkit-text-fill-color:#fff;font:inherit;padding:13px!important;border:1px solid rgba(255,255,255,.35)!important;border-radius:11px!important}.field input[type="date"]::-webkit-datetime-edit,.field input[type="time"]::-webkit-datetime-edit,.field input[type="date"]::-webkit-datetime-edit-text,.field input[type="time"]::-webkit-datetime-edit-text,.field input[type="date"]::-webkit-datetime-edit-month-field,.field input[type="date"]::-webkit-datetime-edit-day-field,.field input[type="date"]::-webkit-datetime-edit-year-field,.field input[type="time"]::-webkit-datetime-edit-hour-field,.field input[type="time"]::-webkit-datetime-edit-minute-field{color:#fff!important;-webkit-text-fill-color:#fff!important}.field input[type="date"]::-webkit-calendar-picker-indicator,.field input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:1;cursor:pointer}.field input[type="date"]:invalid,.field input[type="time"]:invalid{box-shadow:none}
+
+
+/* ================================================================
+   ParkNova Liquid Glass 2.0 — visual-only UI layer
+   Functional HTML, JavaScript and APIs are intentionally untouched.
+   ================================================================ */
+:root{
+  --lg-bg:#061116;
+  --lg-bg-2:#091d24;
+  --lg-text:#f5fbff;
+  --lg-muted:rgba(220,239,243,.64);
+  --lg-faint:rgba(220,239,243,.44);
+  --lg-white:rgba(255,255,255,.92);
+  --lg-line:rgba(255,255,255,.17);
+  --lg-line-soft:rgba(255,255,255,.095);
+  --lg-glass-1:rgba(255,255,255,.055);
+  --lg-glass-2:rgba(255,255,255,.085);
+  --lg-glass-3:rgba(17,51,60,.58);
+  --lg-glass-4:rgba(10,34,42,.72);
+  --lg-cyan:#74ffe9;
+  --lg-blue:#8cb4ff;
+  --lg-purple:#b39cff;
+  --lg-danger:#ff91a1;
+  --lg-shadow:0 28px 90px rgba(0,0,0,.34);
+  --lg-shadow-deep:0 42px 130px rgba(0,0,0,.52);
+  --lg-spring:cubic-bezier(.16,1,.3,1);
+  --lg-smooth:cubic-bezier(.22,1,.36,1);
+}
+
+html{background:var(--lg-bg);color-scheme:dark}
+body{
+  min-height:100vh;
+  color:var(--lg-text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Inter,system-ui,sans-serif;
+  letter-spacing:-.012em;
+  background:
+    radial-gradient(55% 45% at 8% 4%,rgba(57,226,198,.18),transparent 68%),
+    radial-gradient(50% 45% at 93% 10%,rgba(103,139,255,.18),transparent 70%),
+    radial-gradient(55% 50% at 52% 104%,rgba(33,178,255,.12),transparent 72%),
+    linear-gradient(145deg,#040c10 0%,#071c23 43%,#07151d 100%);
+}
+body:before{
+  inset:-20%;
+  background:
+    radial-gradient(22% 20% at 20% 28%,rgba(99,255,231,.18),transparent 70%),
+    radial-gradient(24% 24% at 76% 20%,rgba(117,143,255,.15),transparent 72%),
+    radial-gradient(28% 25% at 58% 78%,rgba(40,216,255,.10),transparent 72%);
+  filter:blur(58px) saturate(125%);
+  opacity:.9;
+  animation:lgAmbient 20s ease-in-out infinite alternate;
+}
+body:after{
+  background:
+    radial-gradient(ellipse at 50% -10%,rgba(255,255,255,.065),transparent 38%),
+    linear-gradient(110deg,transparent 0%,rgba(255,255,255,.018) 46%,rgba(255,255,255,.035) 50%,transparent 55%);
+  background-size:100% 100%,260% 100%;
+  animation:lgLightSweep 12s ease-in-out infinite;
+}
+
+.shell{
+  grid-template-columns:272px minmax(0,1fr);
+  gap:16px;
+  padding:16px;
+  max-width:1720px;
+  margin:0 auto;
+}
+
+.side{
+  min-width:0;
+  padding:20px 14px;
+  border:1px solid var(--lg-line)!important;
+  border-radius:32px!important;
+  background:
+    linear-gradient(155deg,rgba(255,255,255,.105),rgba(255,255,255,.025) 32%,rgba(9,37,45,.60) 100%),
+    radial-gradient(100% 65% at 20% 0%,rgba(103,255,233,.11),transparent 70%);
+  backdrop-filter:blur(42px) saturate(175%);
+  -webkit-backdrop-filter:blur(42px) saturate(175%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.19),
+    inset 0 -1px 0 rgba(0,0,0,.18),
+    0 26px 85px rgba(0,0,0,.30);
+}
+.side:before{background:linear-gradient(145deg,rgba(255,255,255,.13),transparent 25%,transparent 72%,rgba(116,255,233,.045))}
+.brand{
+  margin:2px 8px 30px;
+  font-size:21px;
+  letter-spacing:-.03em;
+  font-weight:800;
+}
+.logo{
+  width:40px;height:40px;border-radius:14px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.38),rgba(116,255,233,.18) 45%,rgba(117,143,255,.30));
+  border:1px solid rgba(255,255,255,.28);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 14px 36px rgba(67,236,216,.18);
+}
+.nav{gap:7px}
+.nav button{
+  min-height:46px;
+  padding:12px 14px!important;
+  border-radius:16px!important;
+  color:rgba(230,244,247,.63)!important;
+  border:1px solid transparent!important;
+  background:transparent!important;
+  font:inherit;
+  font-weight:650;
+  letter-spacing:-.01em;
+}
+.nav button:hover{
+  color:#fff!important;
+  background:rgba(255,255,255,.065)!important;
+  border-color:rgba(255,255,255,.08)!important;
+  transform:translateX(3px)!important;
+}
+.nav button.active{
+  color:#fff!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(113,255,231,.075))!important;
+  border-color:rgba(255,255,255,.14)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.19),0 10px 30px rgba(0,0,0,.17);
+}
+.nav button.active:before{
+  content:"";position:absolute;left:7px;top:50%;width:3px;height:18px;border-radius:99px;
+  transform:translateY(-50%);background:linear-gradient(#a8fff0,#79b9ff);box-shadow:0 0 16px rgba(116,255,233,.55);
+}
+.side>div:last-child{
+  margin-top:auto!important;
+  padding:13px 14px!important;
+  border:1px solid rgba(255,255,255,.11)!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.045)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(20px);
+}
+
+.main{padding:30px 28px;max-width:1520px}
+.top{margin-bottom:26px;align-items:center}
+.ey{
+  color:rgba(147,255,238,.82)!important;
+  font-size:11px!important;
+  letter-spacing:.16em!important;
+  font-weight:800!important;
+}
+.title{font-size:clamp(28px,3vw,38px);line-height:1.08;letter-spacing:-.045em;font-weight:800}
+.sub{color:var(--lg-muted);line-height:1.55}
+h2,h3{letter-spacing:-.035em}
+h2{font-weight:800}
+h3{font-weight:760}
+
+.card,.stat,.lot{
+  border:1px solid var(--lg-line)!important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.095),rgba(255,255,255,.035) 32%,rgba(8,35,43,.54) 100%),
+    radial-gradient(80% 80% at 0% 0%,rgba(111,255,234,.065),transparent 68%);
+  backdrop-filter:blur(34px) saturate(165%);
+  -webkit-backdrop-filter:blur(34px) saturate(165%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),inset 0 -1px 0 rgba(0,0,0,.13),var(--lg-shadow);
+}
+.card{border-radius:27px!important;padding:22px}
+.stat{border-radius:21px!important;padding:18px}
+.lot{border-radius:21px!important;padding:16px}
+.card:hover,.stat:hover,.lot:hover{
+  transform:translateY(-4px)!important;
+  border-color:rgba(150,255,240,.24)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.19),0 34px 90px rgba(0,0,0,.36)!important;
+}
+
+.hero{
+  min-height:260px;
+  background:
+    radial-gradient(90% 120% at 8% 0%,rgba(100,255,230,.15),transparent 55%),
+    radial-gradient(75% 120% at 100% 100%,rgba(112,141,255,.16),transparent 58%),
+    linear-gradient(145deg,rgba(32,91,94,.58),rgba(13,45,57,.52));
+}
+.hero:before{background:linear-gradient(130deg,rgba(255,255,255,.18),transparent 22%,transparent 70%,rgba(111,255,233,.06))}
+.hero:after{background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.08) 48%,transparent 68%)}
+
+.search{gap:10px;margin-top:26px}
+.search input,.field input,.field select,
+#app input:not([type="checkbox"]),#app select{
+  min-height:48px;
+  color:#f8fdff!important;
+  background:rgba(255,255,255,.062)!important;
+  border:1px solid rgba(255,255,255,.15)!important;
+  border-radius:15px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 28px rgba(0,0,0,.08);
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+}
+.search input::placeholder,#app input::placeholder{color:rgba(225,241,244,.42)}
+.search input:focus,.field input:focus,.field select:focus,#app input:not([type="checkbox"]):focus,#app select:focus{
+  border-color:rgba(116,255,233,.52)!important;
+  background:rgba(255,255,255,.095)!important;
+  box-shadow:0 0 0 4px rgba(116,255,233,.075),inset 0 1px 0 rgba(255,255,255,.16),0 16px 34px rgba(0,0,0,.18)!important;
+  transform:translateY(-1px);
+}
+.field label{color:rgba(220,239,243,.55)!important;letter-spacing:.08em}
+.field select option{background:#10262e;color:#f5fbff}
+
+.btn{
+  min-height:44px;
+  border-radius:15px!important;
+  padding:11px 16px!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.045))!important;
+  color:#f7fcff!important;
+  font-weight:720;
+  letter-spacing:-.01em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 10px 28px rgba(0,0,0,.15);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+}
+.btn:hover{
+  background:linear-gradient(145deg,rgba(255,255,255,.19),rgba(113,255,232,.075))!important;
+  border-color:rgba(255,255,255,.25)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 16px 38px rgba(0,0,0,.24);
+}
+.btn.primary{
+  color:#03171a!important;
+  background:linear-gradient(135deg,rgba(119,255,233,.88),rgba(125,159,255,.88))!important;
+  border-color:rgba(255,255,255,.36)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.48),0 15px 40px rgba(68,223,208,.20);
+}
+.btn.primary:hover{background:linear-gradient(135deg,#92ffec,#98b8ff)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.60),0 20px 48px rgba(68,223,208,.27)}
+.btn:disabled{opacity:.48;filter:saturate(.5);box-shadow:none;transform:none!important}
+
+.stats{gap:14px}
+.num{font-size:28px;letter-spacing:-.04em}
+.label{color:var(--lg-muted)!important}
+.tag{border:1px solid rgba(255,255,255,.11);backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.tag.free{color:#8dffeb!important;background:rgba(81,255,222,.095)!important;border-color:rgba(81,255,222,.18)!important}
+.tag.busy{color:#ff9ba8!important;background:rgba(255,112,132,.09)!important;border-color:rgba(255,135,151,.16)!important}
+
+.lots{gap:14px}
+.lotrow{align-items:flex-start}
+.lot b{font-size:15px;letter-spacing:-.02em}
+.slots{gap:7px;margin:15px 0}
+.slot{
+  width:31px;height:31px;border-radius:10px!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  background:rgba(255,255,255,.045)!important;
+  color:rgba(245,252,255,.78);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+.slot.free{background:linear-gradient(145deg,rgba(104,255,230,.10),rgba(255,255,255,.035))!important;border-color:rgba(104,255,230,.18)!important;color:#a6ffef}
+.slot.busy{background:linear-gradient(145deg,rgba(255,112,139,.13),rgba(255,255,255,.025))!important;border-color:rgba(255,139,155,.18)!important;color:#ff9daa}
+.slot:hover{transform:translateY(-3px) scale(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 10px 24px rgba(0,0,0,.25)}
+
+.map{border-radius:22px!important;border:1px solid rgba(255,255,255,.17)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 25px 70px rgba(0,0,0,.30)!important}
+.bookingbox{
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:18px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.025))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 12px 35px rgba(0,0,0,.12)!important;
+  backdrop-filter:blur(22px) saturate(150%);
+  -webkit-backdrop-filter:blur(22px) saturate(150%);
+}
+
+/* Login and all dialogs */
+.modal{
+  background:rgba(1,10,14,.40)!important;
+  backdrop-filter:blur(30px) saturate(145%);
+  -webkit-backdrop-filter:blur(30px) saturate(145%);
+}
+.modal:before{background:radial-gradient(50% 40% at 50% 20%,rgba(106,255,233,.10),transparent 70%),linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.26))}
+.modal .box{
+  width:min(520px,calc(100% - 28px));
+  padding:30px!important;
+  border-radius:32px!important;
+  border:1px solid rgba(255,255,255,.20)!important;
+  background:
+    linear-gradient(145deg,rgba(42,83,91,.70),rgba(9,32,40,.67) 58%,rgba(11,30,40,.72)),
+    radial-gradient(80% 60% at 5% 0%,rgba(114,255,233,.11),transparent 72%);
+  backdrop-filter:blur(46px) saturate(180%) contrast(105%);
+  -webkit-backdrop-filter:blur(46px) saturate(180%) contrast(105%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -1px 0 rgba(0,0,0,.18),var(--lg-shadow-deep),0 0 90px rgba(74,239,218,.07)!important;
+}
+.modal .box:before{background:linear-gradient(125deg,rgba(255,255,255,.19),transparent 23%,transparent 68%,rgba(113,255,233,.06))}
+.modal .box .brand{margin-left:0;margin-right:0;margin-bottom:22px}
+.modal .box .logo{width:42px;height:42px}
+.modal .box h2{font-size:32px;margin-top:8px}
+.modal .box .btn{min-height:46px}
+
+.time-picker{gap:8px}
+.time-picker select{border-radius:15px!important;background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.17)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 25px rgba(0,0,0,.12);backdrop-filter:blur(18px)}
+.time-picker span{color:rgba(245,252,255,.82)}
+.field input[type="date"],.field input[type="time"]{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.17)!important;border-radius:15px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 25px rgba(0,0,0,.12)!important}
+
+.toast{
+  right:22px;bottom:22px;
+  min-width:220px;max-width:min(420px,calc(100% - 32px));
+  padding:13px 17px!important;
+  border-radius:999px!important;
+  color:#f7ffff!important;
+  background:linear-gradient(145deg,rgba(35,76,83,.84),rgba(8,31,39,.82))!important;
+  border:1px solid rgba(255,255,255,.19)!important;
+  backdrop-filter:blur(30px) saturate(175%);
+  -webkit-backdrop-filter:blur(30px) saturate(175%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.19),0 24px 60px rgba(0,0,0,.40)!important;
+}
+
+/* Inline settings controls */
+#app input[type="checkbox"]{accent-color:#77ffe8}
+
+/* Desktop glass depth */
+@media(min-width:901px){
+  .side{position:sticky;top:16px;height:calc(100vh - 32px);align-self:start}
+  .main{min-width:0}
+}
+
+/* Tablet / mobile: keep the navigation usable instead of hiding it. */
+@media(max-width:900px){
+  .shell{display:block;padding:10px}
+  .side{position:relative;height:auto;display:flex;align-items:center;gap:12px;padding:11px;border-radius:25px!important;margin-bottom:12px;overflow:hidden}
+  .brand{flex:0 0 auto;margin:0 8px 0 4px}
+  .brand .logo{width:36px;height:36px}
+  .nav{display:flex;flex:1;min-width:0;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav button{flex:0 0 auto;white-space:nowrap;padding:10px 13px!important;min-height:42px}
+  .nav button.active:before{display:none}
+  .side>div:last-child{margin:0!important;flex:0 0 auto;padding:9px 11px!important}
+  .main{padding:18px 8px}
+}
+@media(max-width:640px){
+  .side{align-items:stretch;flex-wrap:wrap}
+  .brand{width:100%;margin-bottom:2px}
+  .nav{width:100%;flex-basis:100%}
+  .side>div:last-child{display:none}
+  .top{gap:12px;align-items:flex-start}
+  .top>.btn{flex:0 0 auto}
+  .title{font-size:28px}
+  .grid{gap:14px}
+  .card{padding:18px;border-radius:23px!important}
+  .hero{min-height:235px}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .stat{padding:13px 10px;border-radius:17px!important}
+  .num{font-size:23px}
+  .lots{grid-template-columns:1fr;gap:10px}
+  .search{flex-direction:column}
+  .search .btn{width:100%}
+  .modal{padding:8px;align-items:end}
+  .modal .box{width:100%;max-height:90vh;overflow:auto;padding:24px 18px!important;border-radius:30px 30px 22px 22px!important}
+  .toast{right:12px;bottom:12px}
+}
+@media(max-width:390px){
+  .stats{grid-template-columns:1fr}
+  .top{flex-direction:column}
+  .top>.btn{width:100%}
+  .time-picker select:last-child{flex-basis:72px}
+}
+
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .side,.card,.stat,.lot,.btn,.search input,.field input,.field select,.bookingbox,.modal .box,.toast{background:rgba(17,44,52,.92)!important}
+}
+
+@keyframes lgAmbient{0%{transform:translate3d(-2%,0,0) scale(1)}50%{transform:translate3d(2%,1.5%,0) scale(1.045)}100%{transform:translate3d(-1%,-1%,0) scale(1.02)}}
+@keyframes lgLightSweep{0%,20%{background-position:0 0,180% 0}58%,100%{background-position:0 0,-20% 0}}
+
+@media(prefers-reduced-motion:reduce){
+  body:before,body:after{animation:none!important}
+  .side,.card,.stat,.lot,.btn,.modal .box,.toast{transition:none!important}
+}
+
+</style></head><body><div id="toast" class="toast"></div><div id="app"></div><script>
+let me=null,parking=[],bookingRecords=[];
+const $=id=>document.getElementById(id); const toast=t=>{let e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>e.style.display='none',2500)};
+async function api(url,opt){let r=await fetch(url,{headers:{'Content-Type':'application/json'},...opt});if(!r.ok)throw new Error((await r.text())||'Request failed');return r.json()}
+function login(){document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="box"><div class="brand" style="margin:0 0 20px"><div class="logo">P</div>ParkNova</div><div class="ey">Smart parking portal</div><h2 id="loginTitle">Sign in</h2><div class="field"><label>EMAIL / USERNAME</label><input id="email" value="demo@parknova.com"></div><div class="field"><label>PASSWORD</label><input id="password" type="password" value="123456"></div><div style="display:flex;gap:8px"><button class="btn primary" style="flex:1" onclick="setLoginMode('user')">User Login</button><button class="btn" style="flex:1" onclick="setLoginMode('admin')">Admin Login</button></div><button class="btn primary" id="enterBtn" style="width:100%;margin-top:10px" onclick="doLogin('user')">Enter User Panel →</button><p class="sub" id="loginHint" style="text-align:center;margin-top:12px">User: demo@parknova.com / 123456</p></div></div>`)}
+function setLoginMode(role){let e=$('email'),p=$('password'),b=$('enterBtn'),t=$('loginTitle'),h=$('loginHint');if(role==='admin'){e.value='admin@parknova.com';p.value='admin123';b.textContent='Enter Admin Console →';b.onclick=()=>doLogin('admin');t.textContent='Admin Sign in';h.textContent='Admin: admin@parknova.com / admin123'}else{e.value='demo@parknova.com';p.value='123456';b.textContent='Enter User Panel →';b.onclick=()=>doLogin('user');t.textContent='Sign in';h.textContent='User: demo@parknova.com / 123456'}}
+async function doLogin(role){try{me=await api('/api/login',{method:'POST',body:JSON.stringify({email:$('email').value,password:$('password').value,role})});document.querySelector('.modal').remove();render();toast('Login successful ✓')}catch(e){toast('Invalid credentials')}}
+async function load(){[parking,bookingRecords]=await Promise.all([api('/api/parking'),api('/api/bookings')]);render();setTimeout(renderFreeMap,100)}
+function renderFreeMap(){const el=$('map');if(!el)return;el.innerHTML='<div style="height:100%;position:relative;background:linear-gradient(135deg,#dfeadf,#f5f1df);overflow:hidden"><div style="position:absolute;left:-15%;top:48%;width:130%;height:42px;background:#b8c1b8;transform:rotate(-15deg);border-top:3px solid #fff;border-bottom:3px solid #fff"></div><div style="position:absolute;left:8%;top:16%;width:90%;height:3px;background:#fff;transform:rotate(25deg)"></div><div style="position:absolute;left:20%;top:25%;width:70%;height:2px;background:#fff;transform:rotate(-42deg)"></div><div style="position:absolute;inset:12px 12px auto 12px;display:flex;justify-content:space-between;z-index:4"><b style="background:#fff;padding:7px 10px;border-radius:9px;color:#172033">📍 Rajkot · Free Map</b><button class="btn" onclick="locateMe()">◎ GPS</button></div>'+parking.map((x,i)=>'<button title="'+x.name+'" onclick="selectParking('+x.id+')" style="position:absolute;left:'+(18+i*19)+'%;top:'+(25+(i%2)*38)+'%;z-index:3;border:3px solid white;background:'+(x.free?'#13c8a3':'#ff667a')+';color:white;width:34px;height:34px;border-radius:50%;cursor:pointer;font-weight:800">P</button>').join('')+'<div style="position:absolute;left:48%;top:62%;z-index:3;width:18px;height:18px;border-radius:50%;background:#1683ff;border:4px solid white;box-shadow:0 0 0 7px #1683ff33"></div></div>'}
+function selectParking(id){const x=parking.find(p=>p.id===id);if(x){toast(x.name+' · '+x.free+' free slots');}}
+function locateMe(){if(localStorage.getItem('parknova_gps')==='off')return toast('Enable GPS in Settings first');if(!navigator.geolocation)return toast('GPS is not supported');navigator.geolocation.getCurrentPosition(()=>toast('Your live GPS location updated ✓'),()=>toast('Location permission denied'))}
+function mapsDestination(p){const label=(p.name||'').replace(/\s+Parking$/i,'').trim();return encodeURIComponent([label,p.area,'Rajkot','Gujarat','India'].filter(Boolean).join(', '))}
+function navigateNearest(){const x=parking.find(p=>p.free>0)||parking[0];if(!x)return;if(localStorage.getItem('parknova_gps')==='off')return toast('Enable GPS in Settings first');window.open('https://www.google.com/maps/dir/?api=1&destination='+mapsDestination(x),'_blank')}
+function render(){if(!me){login();return}let free=parking.reduce((s,x)=>s+x.free,0);$('app').innerHTML=`<div class="shell"><aside class="side"><div class="brand"><div class="logo">P</div>ParkNova</div><div class="nav"><button class="active">⌂ Overview</button><button onclick="focusLots()">⌕ Find Parking</button><button onclick="loadBookings()">▣ My Bookings</button><button onclick="showHistory()">◷ History</button><button onclick="showSettings()">⚙ Settings</button>${me.role==='admin'?'<button onclick="admin()">▦ Admin Console</button>':''}</div><div style="margin-top:40px;padding:14px;border:1px solid var(--line);border-radius:15px"><b>${me.name}</b><div class="label">${me.role==='admin'?'Administrator':'Premium user'}</div></div></aside><main class="main"><div class="top"><div><div class="ey">Live parking network</div><div class="title">Good evening, ${me.name} 👋</div><div class="sub">Find a spot, reserve it, and park without the hassle.</div></div><button class="btn" onclick="logout()">Logout</button></div><div class="grid"><div><section class="card hero"><div class="ey">Smart parking</div><h2>Park smarter. Arrive stress-free.</h2><p class="sub">Real-time availability from the API.</p><div class="search"><input id="q" placeholder="Search parking location..." oninput="filter()"><button class="btn primary" onclick="focusLots()">Find a spot</button></div></section><div class="stats"><div class="stat"><div class="num">${free}</div><div class="label">Free slots</div></div><div class="stat"><div class="num">${parking.length}</div><div class="label">Locations</div></div><div class="stat"><div class="num">₹20<span class="label">/hr</span></div><div class="label">Starting price</div></div></div><section class="card" id="lots"><h3>Available parking</h3><div class="lots">${parking.map(lot).join('')}</div></section></div><div><section class="card"><h3>Live Free Map</h3><div class="map"><div id="map" class="mapcanvas"></div></div><div class="mapactions"><button class="btn primary" onclick="locateMe()">📍 My Location</button><button class="btn" onclick="navigateNearest()">🧭 Navigate</button><button class="btn" onclick="load()">↻ Refresh</button></div><div class="bookingbox" style="margin-top:10px"><b>📍 Rajkot · Free Map</b><div class="sub">Free browser map view + manual parking markers. Navigation opens Google Maps. No parking sensors are used.</div></div></section><section class="card"><h3>My vehicle & services</h3><div class="bookingbox"><b>🚗 ${localStorage.getItem('parknova_plate')||'GJ-03-AB-1234'}</b><div class="sub">White Sedan · Fastag linked</div></div></section></div></div></main></div>`}
+function lot(x){let occupied=new Set(bookingRecords.filter(b=>b.location===x.name&&b.status!=='Cancelled'&&b.status!=='Completed').map(b=>Number(b.parkingNo)));let slots=Array.from({length:Math.min(x.total,12)},(_,i)=>`<span class="slot ${occupied.has(i+1)?'busy':'free'}">${i+1}</span>`).join('');return `<div class="lot"><div class="lotrow"><div><b>${x.name}</b><div class="label">${x.area} · ₹${x.price}/hr</div></div><span class="tag ${x.free?'free':'busy'}">${x.free?'Available':'Full'}</span></div><div class="slots">${slots}</div><button class="btn ${x.free?'primary':''}" style="width:100%" onclick="book(${x.id})">${x.free?'Reserve a slot':'Join waitlist'}</button></div>`}
+function filter(){let q=$('q').value.toLowerCase();document.querySelector('.lots').innerHTML=parking.filter(x=>(x.name+' '+x.area).toLowerCase().includes(q)).map(lot).join('')}
+function focusLots(){$('lots').scrollIntoView({behavior:'smooth'})}
+async function book(id){let x=parking.find(p=>p.id===id);if(!x.free)return toast('Parking full');let today=new Date().toISOString().slice(0,10);document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="box"><div class="ey">Secure reservation</div><h2>${x.name}</h2><div class="bookingbox" style="margin-bottom:12px"><b>🅿️ Parking number</b><div class="sub">The system will assign the first available slot number and keep that exact number for this booking.</div></div><div class="field"><label>DATE · FUTURE DATES ONLY</label><input id="bd" type="date" min="${today}" value="${today}"></div><div class="field"><label>TIME · EXACT TIME</label><div class="time-picker" aria-label="Booking time"><select id="bth" aria-label="Hour">${Array.from({length:12},(_,i)=>{let h=i+1;return `<option value="${h}" ${h===8?"selected":""}>${h}</option>`}).join("")}</select><span>:</span><select id="btm" aria-label="Minute">${Array.from({length:60},(_,i)=>{let m=String(i).padStart(2,"0");return `<option value="${m}" ${m==="37"?"selected":""}>${m}</option>`}).join("")}</select><select id="bta" aria-label="AM or PM"><option value="AM">AM</option><option value="PM" selected>PM</option></select></div><div class="sub" style="margin-top:6px">Select any exact minute, e.g. 8:37 AM or 8:37 PM.</div></div><div class="field"><label>BOOKING DURATION · 1–24 HOURS</label><select id="bu">${Array.from({length:24},(_,i)=>`<option value="${i+1}">${i+1} hour${i?'s':''}</option>`).join('')}</select></div><button class="btn primary" style="width:100%" onclick="confirmBook(${x.id})">Confirm & Pay →</button><button class="btn" style="width:100%;margin-top:8px" onclick="this.closest('.modal').remove()">Cancel</button></div></div>`)}
+async function confirmBook(id){try{let h=+$('bth').value,m=+$('btm').value,ampm=$('bta').value;if(ampm==='AM'){if(h===12)h=0}else if(h!==12)h+=12;let bookingTime=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;let b=await api('/api/bookings',{method:'POST',body:JSON.stringify({parkingId:id,email:me.name==='Admin'?'admin@parknova.com':'demo@parknova.com',date:$('bd').value,time:bookingTime,duration:+$('bu').value,parkingNo:null})});let x=parking.find(p=>p.id===id);document.querySelector('.modal').remove();await load();document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="box" style="text-align:center"><div class="ey">Booking Confirmed ✓</div><h2>${b.location}</h2><p class="sub">Booking ID: ${b.id}<br>🅿️ Parking No. ${b.parkingNo}<br>${b.date} · ${b.time} · ${b.duration} hour · ₹${b.total}</p><div class="bookingbox"><b>📍 Your booked parking</b><div class="sub">Navigation will open the exact booked parking location in Google Maps.</div></div><button class="btn primary" style="width:100%;margin-top:10px" onclick="navigateBooking('${b.id}');this.closest('.modal').remove()">🧭 Navigate to ${b.location}</button><button class="btn" style="width:100%;margin-top:8px" onclick="this.closest('.modal').remove()">Close</button></div></div>`);toast(`Booking ${b.id} confirmed ✓`)}catch(e){toast('Booking failed: '+(e.message||'Please check date, time and slot'))}}
+async function loadBookings(){try{let all=await api('/api/bookings'),b=all.filter(x=>!me||x.user===me.email);document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="box" style="width:min(760px,calc(100% - 30px));max-height:86vh;overflow:auto"><div class="ey">ParkNova · ${me?.name||'User'}</div><h2>My Bookings</h2><p class="sub">Your reservations are shown here.</p>${b.length?b.map(x=>`<div class="bookingbox" style="padding:13px;border:1px solid var(--line);border-radius:12px;margin:8px 0"><b>${x.id} · ${x.location} · 🅿️ P-${String(x.parkingNo).padStart(2,'0')}</b><div class="sub">${x.date} · ${x.time} · ${x.duration} hr · ₹${x.total} · <strong>${x.status}</strong></div><div style="display:flex;gap:7px;margin-top:9px"><button class="btn primary" onclick="navigateBooking('${x.id}')">🧭 Navigate</button>${(x.status==='Confirmed')?`<button class="btn" onclick="cancelUserBooking('${x.id}')">Cancel</button>`:''}</div></div>`).join(''):'<div class="bookingbox"><b>No bookings yet.</b><div class="sub">Your confirmed, completed and cancelled reservations will appear here.</div></div>'}<button class="btn primary" style="width:100%;margin-top:10px" onclick="this.closest('.modal').remove()">Close</button></div></div>`)}catch(e){toast('Unable to load booking history')}}
+async function showHistory(){return loadBookings()}
+async function navigateBooking(id){try{let b=(await api('/api/bookings')).find(x=>x.id===id);if(!b)return toast('Booking not found');let p=parking.find(x=>x.name===b.location);if(!p)return toast('Parking location not found');window.open('https://www.google.com/maps/dir/?api=1&destination='+mapsDestination(p),'_blank');toast('Navigation opened ✓')}catch(e){toast('Navigation failed')}}
+async function cancelUserBooking(id){try{await api('/api/bookings/'+encodeURIComponent(id),{method:'DELETE'});toast('Booking cancelled and slot released ✓');await load();await loadBookings()}catch(e){toast(e.message||'Unable to cancel booking')}}
+function showSettings(){let alerts=localStorage.getItem('parknova_alerts')!=='off',gps=localStorage.getItem('parknova_gps')!=='off',plate=localStorage.getItem('parknova_plate')||'GJ-03-AB-1234',theme=localStorage.getItem('parknova_theme')||'glass';document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="box" style="width:min(560px,calc(100% - 30px))"><div class="ey">ParkNova · Account Settings</div><h2>Settings</h2><div class="bookingbox"><b>🔔 Parking alerts</b><div class="sub">Enable availability and booking notifications.</div><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="setAlerts" type="checkbox" ${alerts?'checked':''}> Enabled</label></div><div class="bookingbox"><b>📍 GPS location</b><div class="sub">Used when you request your current location.</div><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="setGps" type="checkbox" ${gps?'checked':''}> Enabled</label></div><div class="bookingbox"><b>🚗 Vehicle number</b><div class="sub">Saved with your browser for your parking pass.</div><input id="setPlate" value="${plate.replace(/"/g,'&quot;')}" style="width:100%;margin-top:10px;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--text)"></div><div class="bookingbox"><b>🎨 Theme</b><div class="sub">Choose your preferred interface theme.</div><select id="setTheme" style="width:100%;margin-top:10px;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--text)"><option value="glass" ${theme==='glass'?'selected':''}>Liquid Glass</option><option value="dark" ${theme==='dark'?'selected':''}>Midnight</option><option value="light" ${theme==='light'?'selected':''}>Light</option></select></div><button class="btn primary" style="width:100%;margin-top:10px" onclick="saveSettings()">Save Settings</button><button class="btn" style="width:100%;margin-top:8px" onclick="this.closest('.modal').remove()">Cancel</button></div></div>`)}
+function saveSettings(){localStorage.setItem('parknova_alerts',$('setAlerts').checked?'on':'off');localStorage.setItem('parknova_gps',$('setGps').checked?'on':'off');localStorage.setItem('parknova_plate',$('setPlate').value.trim()||'GJ-03-AB-1234');localStorage.setItem('parknova_theme',$('setTheme').value);applySettings();document.querySelector('.modal')?.remove();toast('Settings saved ✓')}
+function applySettings(){let t=localStorage.getItem('parknova_theme')||'glass';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t==='light'?'light':'dark'}
+async function admin(){if(me?.role!=='admin')return;let d=await api('/api/admin/dashboard');let bookings=await api('/api/bookings');let rows=parking.map(x=>`<div class="bookingbox" style="margin:8px 0"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${x.name}</b><div class="sub">${x.area} · ₹${x.price}/hr · ${x.free}/${x.total} free</div></div><span class="tag ${x.free?'free':'busy'}">${x.free?'AVAILABLE':'FULL'}</span></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px"><button class="btn" onclick="adminAdjust(${x.id},-1)">− Occupy</button><button class="btn" onclick="adminAdjust(${x.id},1)">＋ Free</button><button class="btn" onclick="adminEdit(${x.id})">Edit</button><button class="btn" onclick="adminDelete(${x.id})">Remove</button><button class="btn primary" onclick="adminReserve(${x.id})">Reserve Booking</button></div></div>`).join('');let history=bookings.length?bookings.map(x=>`<div class="bookingbox" style="margin:8px 0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><div><b>${x.id} · ${x.location} · 🅿️ P-${String(x.parkingNo).padStart(2,'0')}</b><div class="sub">${x.user} · ${x.date} ${x.time} · ${x.duration} hr · ₹${x.total}</div></div><span class="tag ${x.status==='Cancelled'?'busy':'free'}">${x.status}</span></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${(x.status==='Confirmed'||x.status==='Reserved')?`<button class="btn" onclick="adminBookingStatus('${x.id}','Completed')">✓ Complete</button><button class="btn" onclick="adminBookingStatus('${x.id}','Cancelled')">✕ Cancel</button>`:''}</div></div>`).join(''):'<div class="bookingbox">No reservations yet.</div>';document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="box" style="width:min(1000px,calc(100% - 30px));max-height:92vh;overflow:auto"><div class="ey">Admin Console · Manual Operations</div><h2>Parking command center</h2><div class="adminGrid"><div class="stat"><div class="num">${d.freeSlots}</div><div class="label">Free slots</div></div><div class="stat"><div class="num">${d.occupied}</div><div class="label">Occupied now</div></div><div class="stat"><div class="num">${d.reservations}</div><div class="label">Reservations</div></div><div class="stat"><div class="num">₹${d.revenue}</div><div class="label">Revenue</div></div><div class="stat"><div class="num">${d.locations}</div><div class="label">Locations</div></div><div class="stat"><div class="num">RESERVE</div><div class="label">Admin booking</div></div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px"><div><b>Manual parking control</b><div class="sub">Admin directly marks slots free/occupied.</div></div><button class="btn primary" onclick="adminAdd()">＋ Add Parking</button></div>${rows}<div style="margin-top:20px"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>Booking history & reservations</b><div class="sub">Reserve for a customer, confirm, complete or cancel.</div></div><button class="btn primary" onclick="adminReserve()">＋ New Reservation</button></div><div style="margin-top:8px">${history}</div></div><div style="margin-top:14px;display:flex;gap:8px"><button class="btn primary" onclick="this.closest('.modal').remove()">← Back to User Panel</button><button class="btn" onclick="this.closest('.modal').remove()">Close</button></div></div></div>`)}
+async function adminAdjust(id,delta){let p=parking.find(x=>x.id===id);if(!p)return;let r=await api('/api/admin/parking/'+id,{method:'PUT',body:JSON.stringify({free:Math.max(0,Math.min(p.total,p.free+delta))})});if(r.id){document.querySelector('.modal').remove();await load();toast('Manual slot status updated ✓');admin()}}
+async function adminEdit(id){let p=parking.find(x=>x.id===id);if(!p)return;let price=Number(prompt('Hourly price',p.price));let total=Number(prompt('Total slots',p.total));let name=prompt('Parking name',p.name);let area=prompt('Area / address',p.area);if(!Number.isFinite(price)||!Number.isInteger(total)||total<1)return toast('Invalid details');await api('/api/admin/parking/'+id,{method:'PUT',body:JSON.stringify({price,total,name,area})});document.querySelector('.modal').remove();await load();toast('Parking updated ✓');admin()}
+async function adminDelete(id){if(!confirm('Remove this parking location?'))return;await api('/api/admin/parking/'+id,{method:'DELETE'});document.querySelector('.modal').remove();await load();toast('Parking removed ✓');admin()}
+async function adminAdd(){let name=prompt('Parking name');if(!name)return;let area=prompt('Area / address','Rajkot');let total=Number(prompt('Total slots','20'));let price=Number(prompt('Price per hour','20'));let lat=Number(prompt('Latitude','22.3039'));let lng=Number(prompt('Longitude','70.8022'));if(!Number.isInteger(total)||total<1||!Number.isFinite(price)||!Number.isFinite(lat)||!Number.isFinite(lng))return toast('Invalid details');await api('/api/admin/parking',{method:'POST',body:JSON.stringify({name,area,price,total,lat,lng})});document.querySelector('.modal').remove();await load();toast('New parking added ✓');admin()}
+async function adminReserve(id){let p=id?parking.find(x=>x.id===id):parking.find(x=>x.free>0);if(!p)return toast('No parking with free slot');let customer=prompt('Customer name / email');if(!customer)return;let date=prompt('Date (YYYY-MM-DD)',new Date().toISOString().slice(0,10));if(!date)return;let timeInput=prompt('Exact time (e.g. 8:37 AM or 8:37 PM)','8:37 PM');if(!timeInput)return;let tm=timeInput.trim().match(/^(1[0-2]|[1-9]):([0-5][0-9])\s*(AM|PM)$/i);if(!tm)return toast('Time must be like 8:37 AM or 8:37 PM');let th=Number(tm[1]),tmn=Number(tm[2]),ta=tm[3].toUpperCase();if(ta==='AM'){if(th===12)th=0}else if(th!==12)th+=12;let time=`${String(th).padStart(2,'0')}:${String(tmn).padStart(2,'0')}`;let duration=Number(prompt('Duration in hours','1'));if(!Number.isInteger(duration)||duration<1||duration>24)return toast('Duration must be between 1 and 24 hours');try{await api('/api/admin/bookings',{method:'POST',body:JSON.stringify({parkingId:p.id,customer,date,time,duration})});document.querySelector('.modal').remove();await load();toast('Reservation created ✓');admin()}catch(e){toast(e.message||'Reservation failed')}}
+async function adminBookingStatus(id,status){try{await api('/api/admin/bookings/'+id,{method:'PUT',body:JSON.stringify({status})});document.querySelector('.modal').remove();await load();toast('Booking status: '+status+' ✓');admin()}catch(e){toast('Booking update failed')}}
+function logout(){me=null;$('app').innerHTML='';login()}
+applySettings();load().catch(() =>{document.body.innerHTML='<div style="padding:40px;font-family:Arial;color:white;background:#0b1020;min-height:100vh"><h1>ParkNova</h1><p>Please start the application and refresh this page.</p></div>'});
+
+// Liquid Glass interaction system: springy buttons, glass ripple, spotlight, modal blur and animated close.
+(function(){
+  function closeGlassModal(modal){
+    if(!modal||modal.classList.contains('closing'))return;
+    modal.classList.add('closing');
+    setTimeout(()=>modal.remove(),320);
+  }
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('.btn,.nav button');
+    if(b){
+      const r=b.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+      const ripple=document.createElement('span');ripple.className='glass-ripple';ripple.style.left=x+'px';ripple.style.top=y+'px';b.appendChild(ripple);setTimeout(()=>ripple.remove(),700);
+      b.animate([{transform:'scale(1)'},{transform:'scale(.965)'},{transform:'scale(1)'}],{duration:300,easing:'cubic-bezier(.16,1,.3,1)'});
+    }
+  },true);
+  document.addEventListener('pointermove',e=>{
+    const s=e.target.closest('.card,.box,.side');if(!s)return;
+    const r=s.getBoundingClientRect();s.style.setProperty('--gx',(e.clientX-r.left)+'px');s.style.setProperty('--gy',(e.clientY-r.top)+'px');
+  },{passive:true});
+  document.addEventListener('click',e=>{
+    const modal=e.target.closest('.modal');
+    if(modal&&e.target===modal)closeGlassModal(modal);
+  },true);
+  const obs=new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{
+    if(n.nodeType!==1)return;
+    const mod=n.classList?.contains('modal')?n:n.querySelector?.('.modal');
+    if(mod){
+      requestAnimationFrame(()=>mod.classList.add('modal-ready'));
+      mod.addEventListener('pointerdown',ev=>{if(ev.target===mod)closeGlassModal(mod)});
+      const box=mod.querySelector('.box');
+      if(box){
+        const shine=document.createElement('span');shine.className='glass-shine';box.appendChild(shine);setTimeout(()=>shine.remove(),1000);
+      }
+    }
+  })));
+  obs.observe(document.body,{childList:true,subtree:true});
+})();
+</script></body></html>
